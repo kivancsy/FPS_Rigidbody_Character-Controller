@@ -165,7 +165,7 @@ CapsuleCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 53291927}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: a9d6cb793fd6b3640b1941026ad99084, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -247,13 +247,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 4
   walkSpeed: 4
-  sprintSpeed: 5
   slideSpeed: 0
   backpedalSpeed: 0.6
-  wallRunSpeed: 0
   speedIncreaseMultiplier: 0
-  slopeIncreaseMultiplier: 0
-  isSprinting: 0
+  slopeIncreaseMultiplier: 1.5
   sliding: 0
   wallRunning: 0
   groundDrag: 4
@@ -264,7 +261,7 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   isGrounded: 0
-  maxSlopAngle: 0
+  maxSlopAngle: 40
   exitingSlope: 0
   orientation: {fileID: 663904180}
 --- !u!1 &106487720
@@ -929,7 +926,7 @@ GameObject:
   - component: {fileID: 1684437965}
   - component: {fileID: 1684437964}
   - component: {fileID: 1684437963}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -944,13 +941,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1684437961}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 3.53}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: -0.21446773, y: -0, z: -0, w: 0.97673106}
+  m_LocalPosition: {x: 0, y: 3.38, z: 9.92}
+  m_LocalScale: {x: 2.067, y: 0.24999, z: 16.299488}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 194755422}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: -24.769, y: 0, z: 0}
 --- !u!65 &1684437963
 BoxCollider:
   m_ObjectHideFlags: 0
