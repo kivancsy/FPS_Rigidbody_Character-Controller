@@ -4,8 +4,9 @@ public class InputHandler : MonoBehaviour
 {
     private PlayerInputSet input;
 
-    public Vector2 lookInput;
-    public Vector2 moveInput;
+    public Vector2 lookInput { get; private set; }
+    public Vector2 moveInput { get; private set; }
+    public bool jumpInput { get; private set; }
 
     void Awake()
     {
@@ -17,6 +18,12 @@ public class InputHandler : MonoBehaviour
     {
         input.PlayerController.Look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
         input.PlayerController.Look.canceled += ctx => lookInput = Vector2.zero;
+
+        input.PlayerController.Movement.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
+        input.PlayerController.Movement.canceled += ctx => moveInput = Vector2.zero;
+        
+        input.PlayerController.Jump.performed += ctx => jumpInput = ctx.ReadValueAsButton();
+        input.PlayerController.Jump.canceled += ctx => jumpInput = false;
     }
 
     private void OnEnable() => input.Enable();

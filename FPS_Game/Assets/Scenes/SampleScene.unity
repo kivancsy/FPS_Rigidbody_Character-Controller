@@ -132,6 +132,7 @@ GameObject:
   - component: {fileID: 53291929}
   - component: {fileID: 53291932}
   - component: {fileID: 53291931}
+  - component: {fileID: 53291933}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -219,8 +220,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: faf6b4105b424ff4ba802ef45b214f9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  lookInput: {x: 0, y: 0}
-  moveInput: {x: 0, y: 0}
 --- !u!114 &53291932
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -234,6 +233,40 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _playerCamera: {fileID: 227489925}
+--- !u!114 &53291933
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 53291927}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f90f5523e2995e4f8f7a297399de1ac, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  moveSpeed: 4
+  walkSpeed: 4
+  sprintSpeed: 5
+  slideSpeed: 0
+  backpedalSpeed: 0.6
+  wallRunSpeed: 0
+  speedIncreaseMultiplier: 0
+  slopeIncreaseMultiplier: 0
+  isSprinting: 0
+  sliding: 0
+  wallRunning: 0
+  groundDrag: 4
+  jumpForce: 6
+  airMultiplier: 3
+  playerHeight: 2
+  whatIsGround:
+    serializedVersion: 2
+    m_Bits: 64
+  isGrounded: 0
+  maxSlopAngle: 0
+  exitingSlope: 0
+  orientation: {fileID: 663904180}
 --- !u!1 &106487720
 GameObject:
   m_ObjectHideFlags: 0
@@ -676,7 +709,7 @@ GameObject:
   - component: {fileID: 530010103}
   - component: {fileID: 530010102}
   - component: {fileID: 530010101}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
