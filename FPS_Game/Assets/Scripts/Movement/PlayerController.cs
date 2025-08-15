@@ -15,7 +15,7 @@ public class PlayerController : MonoBehaviour
     void FixedUpdate()
     {
         _playerMovement.ProcessMovement(_input.moveInput);
-        
+
         if (_input.jumpInput)
             _playerMovement.Jump();
     }

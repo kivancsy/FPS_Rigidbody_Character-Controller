@@ -1,3 +1,5 @@
+using System;
+using System.Collections;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -18,6 +20,13 @@ public class PlayerMovement : MonoBehaviour
 
     public float groundDrag;
 
+    // [Header("Sliding")] public float maxSlideTime;
+    // public float slideForce;
+    // public float slideTimer;
+    //
+    // public float slideYScale;
+    // public float originalYScale;
+
     [Header("Jump")] public float jumpForce;
     public float airMultiplier;
 
@@ -34,11 +43,19 @@ public class PlayerMovement : MonoBehaviour
 
     private Vector3 moveDirection;
     private Rigidbody rb;
+    private PlayerUI playerUI;
+
 
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
+
+        playerUI = GetComponent<PlayerUI>();
+    }
+
+    private void Start()
+    {
     }
 
     void Update()
@@ -46,6 +63,7 @@ public class PlayerMovement : MonoBehaviour
         SpeedControl();
         HandleDrag();
         GroundCheck();
+        playerUI.UpdateText("Velocity: " + rb.linearVelocity.magnitude.ToString("F2"));
     }
 
     public void ProcessMovement(Vector2 moveInput)
@@ -54,6 +72,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (OnSlope() && !exitingSlope)
         {
+            Debug.Log(OnSlope());
             rb.AddForce(GetSlopeMoveDirection(moveDirection) * (moveSpeed * 20f), ForceMode.Force);
 
             if (rb.linearVelocity.y > 0)
