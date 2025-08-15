@@ -18,8 +18,8 @@ public class PlayerCamera : MonoBehaviour
 
     public void PlayerLook(Vector2 lookInput)
     {
-        float mouseX = lookInput.x * Time.deltaTime * sensitivityX;
-        float mouseY = lookInput.y * Time.deltaTime * sensitivityY;
+        float mouseX = lookInput.x * (Time.deltaTime * sensitivityX);
+        float mouseY = lookInput.y * (Time.deltaTime * sensitivityY);
 
         yRotation += mouseX;
         xRotation -= mouseY;

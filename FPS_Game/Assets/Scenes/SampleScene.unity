@@ -246,16 +246,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6f90f5523e2995e4f8f7a297399de1ac, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 7
-  walkSpeed: 7
-  slideSpeed: 30
-  backpedalSpeed: 0.6
+  baseSpeed: 8
   speedIncreaseMultiplier: 1.5
   slopeIncreaseMultiplier: 2.5
-  sliding: 0
-  wallRunning: 0
-  groundDrag: 4
-  jumpForce: 6
+  isSliding: 0
+  groundDrag: 0
+  jumpForce: 2
   airMultiplier: 3
   playerHeight: 2
   whatIsGround:
@@ -265,6 +261,7 @@ MonoBehaviour:
   maxSlopAngle: 40
   exitingSlope: 0
   orientation: {fileID: 663904180}
+  displacement: {x: 0, y: 0, z: 0}
 --- !u!114 &53291934
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -409,6 +406,7 @@ GameObject:
   - component: {fileID: 227489924}
   - component: {fileID: 227489923}
   - component: {fileID: 227489925}
+  - component: {fileID: 227489926}
   m_Layer: 0
   m_Name: PlayerCamera
   m_TagString: Untagged
@@ -540,7 +538,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   sensitivityX: 10
   sensitivityY: 10
-  orientation: {fileID: 663904180}
+  orientation: {fileID: 53291928}
+--- !u!114 &227489926
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 227489921}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: faf6b4105b424ff4ba802ef45b214f9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &349082903
 GameObject:
   m_ObjectHideFlags: 0
@@ -828,7 +838,7 @@ MeshCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 530010099}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: a9d6cb793fd6b3640b1941026ad99084, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -1150,7 +1160,7 @@ BoxCollider:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1684437961}
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 13400000, guid: a9d6cb793fd6b3640b1941026ad99084, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0

@@ -1,13 +1,8 @@
-using System;
-using System.Collections;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
-    [Header("Movement")] public float moveSpeed;
-    public float walkSpeed;
-    public float slideSpeed;
-    public float backpedalSpeed = 0.6f;
+    [Header("Movement")] public float baseSpeed = 8f;
 
     private float desiredMovedSpeed;
     private float lastDesiredMoveSpeed;
@@ -15,9 +10,7 @@ public class PlayerMovement : MonoBehaviour
     public float speedIncreaseMultiplier;
     public float slopeIncreaseMultiplier;
 
-    public bool sliding;
-    public bool wallRunning;
-
+    public bool isSliding;
     public float groundDrag;
 
     // [Header("Sliding")] public float maxSlideTime;
@@ -29,6 +22,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Jump")] public float jumpForce;
     public float airMultiplier;
+    private float lastSpeedBeforeTakeoff;
 
 
     [Header("Ground Check")] public float playerHeight;
@@ -40,6 +34,10 @@ public class PlayerMovement : MonoBehaviour
     public bool exitingSlope;
 
     [Header("Transform References")] public Transform orientation;
+
+    // Displacement Calculation
+    Vector3 lastPosition;
+    [HideInInspector] public Vector3 displacement;
 
     private Vector3 moveDirection;
     private Rigidbody rb;
@@ -60,7 +58,6 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        SpeedControl();
         HandleDrag();
         GroundCheck();
         playerUI.UpdateText("Velocity: " + rb.linearVelocity.magnitude.ToString("F2"));
@@ -68,25 +65,56 @@ public class PlayerMovement : MonoBehaviour
 
     public void ProcessMovement(Vector2 moveInput)
     {
-        moveDirection = orientation.forward * moveInput.y + orientation.right * moveInput.x;
+        moveDirection = transform.right * moveInput.x + transform.forward * moveInput.y;
 
-        if (OnSlope() && !exitingSlope)
+        if (isSliding) return;
+
+        if (moveDirection == Vector3.zero)
         {
-            Debug.Log(OnSlope());
-            rb.AddForce(GetSlopeMoveDirection(moveDirection) * (moveSpeed * 20f), ForceMode.Force);
-
-            if (rb.linearVelocity.y > 0)
-            {
-                rb.AddForce(Vector3.down * 80f, ForceMode.Force);
-            }
+            Debug.Log("No movement");
+            // Dampen speed fast
+            if (isGrounded) rb.linearVelocity = rb.linearVelocity * 0.6f;
+            return;
         }
-        else if (isGrounded)
-            GroundMovement();
 
-        else if (!isGrounded)
-            AirMovement();
+        float horizontalSpeed = new Vector3(displacement.x, 0, displacement.y).magnitude;
+        float speedToApply = Mathf.Max(baseSpeed, horizontalSpeed);
 
-        rb.useGravity = !OnSlope();
+        if (!isGrounded) speedToApply = lastSpeedBeforeTakeoff;
+        if (speedToApply > baseSpeed) speedToApply *= isGrounded ? 0.985f : 0.99f;
+
+
+        // The new velocity to apply
+        Vector3 newVelocity = moveDirection.normalized * speedToApply;
+        newVelocity.y = rb.linearVelocity.y; // Keep the current vertical speed
+
+        if (isGrounded) rb.linearVelocity = newVelocity;
+        else rb.AddForce(moveDirection.normalized * speedToApply, ForceMode.Force);
+
+        if (!isGrounded && horizontalSpeed > baseSpeed)
+        {
+            Vector3 newHorizontalVelocity = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z);
+            newHorizontalVelocity *= 0.98f;
+            rb.linearVelocity = new Vector3(newHorizontalVelocity.x, rb.linearVelocity.y, newHorizontalVelocity.z);
+        }
+
+        #region MyRegion
+
+        // moveDirection = orientation.forward * moveInput.y + orientation.right * moveInput.x;
+        //
+        // if (OnSlope() && !exitingSlope)
+        // {
+        //     Debug.Log(OnSlope());
+        //     rb.AddForce(GetSlopeMoveDirection(moveDirection) * (moveSpeed * 20f), ForceMode.Force);
+        //
+        //     if (rb.linearVelocity.y > 0)
+        //     {
+        //         rb.AddForce(Vector3.down * 80f, ForceMode.Force);
+        //     }
+        // }
+        // rb.useGravity = !OnSlope();
+
+        #endregion
     }
 
     public void Jump()
@@ -94,37 +122,21 @@ public class PlayerMovement : MonoBehaviour
         exitingSlope = true;
         if (!isGrounded) return;
 
-        rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-        rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
+        lastSpeedBeforeTakeoff = displacement.magnitude;
+
+        rb.linearVelocity += Vector3.up * jumpForce;
+        // rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
+        // rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
     }
 
-    private void GroundMovement()
-    {
-        rb.AddForce(moveDirection.normalized * moveSpeed, ForceMode.VelocityChange);
-    }
+    // private void GroundMovement()
+    // {
+    //     rb.AddForce(moveDirection.normalized * moveSpeed, ForceMode.VelocityChange);
+    // }
 
     private void AirMovement()
     {
         rb.AddForce(moveDirection.normalized * airMultiplier, ForceMode.VelocityChange);
-    }
-
-    private void SpeedControl()
-    {
-        if (OnSlope() && !exitingSlope)
-        {
-            if (rb.linearVelocity.magnitude > moveSpeed)
-                rb.linearVelocity = rb.linearVelocity.normalized * moveSpeed;
-        }
-        else
-        {
-            Vector3 flatVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
-
-            if (flatVelocity.magnitude > moveSpeed)
-            {
-                Vector3 limitedVelocity = flatVelocity.normalized * moveSpeed;
-                rb.linearVelocity = new Vector3(limitedVelocity.x, rb.linearVelocity.y, limitedVelocity.z);
-            }
-        }
     }
 
     private void GroundCheck()
