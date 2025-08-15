@@ -2,7 +2,6 @@ using UnityEngine;
 
 public class PlayerController : MonoBehaviour
 {
-    [SerializeField] PlayerCamera _playerCamera;
     PlayerMovement _playerMovement;
     private InputHandler _input;
 
@@ -12,16 +11,25 @@ public class PlayerController : MonoBehaviour
         _playerMovement = GetComponent<PlayerMovement>();
     }
 
+    void Start()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
     void FixedUpdate()
     {
         _playerMovement.ProcessMovement(_input.moveInput);
 
         if (_input.jumpInput)
             _playerMovement.Jump();
+
+        _playerMovement.Slide();
     }
 
     void LateUpdate()
     {
-        _playerCamera.PlayerLook(_input.lookInput);
+        _playerMovement.LookUpAndDownWithCamera(_input.lookInput);
+        _playerMovement.RotateBodyHorizontally(_input.lookInput);
     }
 }

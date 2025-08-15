@@ -3,7 +3,7 @@ using UnityEngine;
 public class InputHandler : MonoBehaviour
 {
     private PlayerInputSet input;
-    PlayerMovement playerMovement;
+    private PlayerMovement playerMovement;
     public Vector2 lookInput { get; private set; }
     public Vector2 moveInput { get; private set; }
     public bool jumpInput { get; private set; }
@@ -16,6 +16,11 @@ public class InputHandler : MonoBehaviour
         SubscribeToInputActionEvents();
     }
 
+    void Update()
+    {
+        Debug.Log("Slide Input: " + slideInput);
+    }
+
     private void SubscribeToInputActionEvents()
     {
         input.PlayerController.Look.performed += ctx => lookInput = ctx.ReadValue<Vector2>();
@@ -26,9 +31,9 @@ public class InputHandler : MonoBehaviour
 
         input.PlayerController.Jump.performed += ctx => jumpInput = ctx.ReadValueAsButton();
         input.PlayerController.Jump.canceled += ctx => jumpInput = false;
-        //
-        // input.PlayerController.Slide.performed += ctx => slideInput = ctx.ReadValueAsButton();
-        // input.PlayerController.Slide.canceled += ctx => playerMovement.StopSlide();
+
+        input.PlayerController.Slide.performed += ctx => slideInput = true;
+        input.PlayerController.Slide.canceled += ctx => slideInput = false;
     }
 
     private void OnEnable() => input.Enable();

@@ -1,3 +1,4 @@
+using DG.Tweening;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -13,17 +14,26 @@ public class PlayerMovement : MonoBehaviour
     public bool isSliding;
     public float groundDrag;
 
-    // [Header("Sliding")] public float maxSlideTime;
-    // public float slideForce;
-    // public float slideTimer;
-    //
-    // public float slideYScale;
-    // public float originalYScale;
+    [Header("Sliding")] public float slideSpeedThreshold = 6f; // Minimum speed needed to begin sliding
+
+    public float
+        addedSlideSpeed = 3f; // Adding flat speed + also add a percentage of horizontal speed up to 66% of base speed
+
+    public float
+        slideSpeedDampening = 0.99f; // The speed will be multiplied by this every frame (to stop in ~3 seconds)
+
+    public float keepSlidingSpeedThreshold = 3f; // As long as speed is above this, keep sliding
+    public float slideSteeringPower = 0.5f; // How much you can steer around while sliding
 
     [Header("Jump")] public float jumpForce;
     public float airMultiplier;
     private float lastSpeedBeforeTakeoff;
 
+    [Header("Look Around")] public Transform cameraHolder;
+    public float mouseSensitivity = 300f;
+    public float verticalClampAngle = 90f;
+    public float horizontalClampAngle = 90f;
+    float verticalRotation = 0f;
 
     [Header("Ground Check")] public float playerHeight;
     public LayerMask whatIsGround;
@@ -33,15 +43,17 @@ public class PlayerMovement : MonoBehaviour
     private RaycastHit slopeHit;
     public bool exitingSlope;
 
-    [Header("Transform References")] public Transform orientation;
+    [Header("Transform References")] public GameObject playerCamera;
+    public GameObject playerVisual;
 
     // Displacement Calculation
     Vector3 lastPosition;
     [HideInInspector] public Vector3 displacement;
 
     private Vector3 moveDirection;
-    private Rigidbody rb;
+    public Rigidbody rb;
     private PlayerUI playerUI;
+    private InputHandler input;
 
 
     void Awake()
@@ -50,6 +62,7 @@ public class PlayerMovement : MonoBehaviour
         rb.freezeRotation = true;
 
         playerUI = GetComponent<PlayerUI>();
+        input = GetComponent<InputHandler>();
     }
 
     private void Start()
@@ -61,7 +74,17 @@ public class PlayerMovement : MonoBehaviour
         HandleDrag();
         GroundCheck();
         playerUI.UpdateText("Velocity: " + rb.linearVelocity.magnitude.ToString("F2"));
+        Debug.Log("Is Sliding: " + isSliding);
     }
+
+    void FixedUpdate()
+    {
+        displacement =
+            (transform.position - lastPosition) * 50;
+        lastPosition = transform.position;
+    }
+
+    #region Movement
 
     public void ProcessMovement(Vector2 moveInput)
     {
@@ -71,7 +94,6 @@ public class PlayerMovement : MonoBehaviour
 
         if (moveDirection == Vector3.zero)
         {
-            Debug.Log("No movement");
             // Dampen speed fast
             if (isGrounded) rb.linearVelocity = rb.linearVelocity * 0.6f;
             return;
@@ -133,6 +155,92 @@ public class PlayerMovement : MonoBehaviour
     // {
     //     rb.AddForce(moveDirection.normalized * moveSpeed, ForceMode.VelocityChange);
     // }
+
+    #endregion
+
+    #region Look
+
+    public void LookUpAndDownWithCamera(Vector2 lookInput)
+    {
+        float mouseY = lookInput.y * (Time.deltaTime * mouseSensitivity);
+
+        // Update vertical rotation
+        verticalRotation -= mouseY;
+        verticalRotation = Mathf.Clamp(verticalRotation, -verticalClampAngle, verticalClampAngle);
+
+        // Apply vertical rotation to the camera holder
+        playerCamera.transform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
+    }
+
+    public void RotateBodyHorizontally(Vector2 lookInput)
+    {
+        // Get mouse input for horizontal rotation
+        float mouseX = lookInput.x * (Time.deltaTime * mouseSensitivity);
+
+        // Rotate the player horizontally
+        transform.Rotate(0f, mouseX, 0f);
+
+        // If sliding, allow steering slightly
+        if (isSliding)
+        {
+            Vector3 newVelocity = rb.linearVelocity;
+            newVelocity = Quaternion.Euler(0, mouseX * slideSteeringPower, 0) * newVelocity;
+            rb.linearVelocity = newVelocity;
+        }
+    }
+
+    #endregion
+
+    #region Sliding
+
+    public void Slide()
+    {
+        if (input.slideInput)
+        {
+            if (!isGrounded) return;
+            if (isSliding) return;
+
+            float horizontalSpeed = new Vector3(rb.linearVelocity.x, 0, rb.linearVelocity.z).magnitude;
+
+            if (horizontalSpeed < slideSpeedThreshold) return;
+
+            StartSliding();
+        }
+
+
+        if (isSliding)
+        {
+            Vector3 newVelocity = rb.linearVelocity * slideSpeedDampening;
+            if (newVelocity.magnitude > keepSlidingSpeedThreshold) rb.linearVelocity = newVelocity;
+            else StopSliding();
+        }
+    }
+
+    private void StartSliding()
+    {
+        isSliding = true;
+        cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y - 0.4f, 0.2f);
+        playerVisual.transform.DOLocalRotate(new Vector3(-20, 0, 0), 0.2f);
+        playerVisual.transform.DOLocalMoveY(-0.2f, 0.2f);
+
+        float currSpeedModifier = Mathf.Clamp(rb.linearVelocity.magnitude / 40, 0, 1); // Maximum speed at 20
+        float boost = addedSlideSpeed + Mathf.Lerp(0, addedSlideSpeed * 2f, currSpeedModifier);
+
+        Vector3 direction = rb.linearVelocity.normalized;
+        rb.linearVelocity = direction * (displacement.magnitude + boost);
+    }
+
+    private void StopSliding()
+    {
+        Debug.Log("Stopping Sliding");
+        isSliding = false;
+        
+        cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y + 0.4f, 0.2f);
+        playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
+        playerVisual.transform.DOLocalMoveY(0f, 0.2f);
+    }
+
+    #endregion
 
     private void AirMovement()
     {

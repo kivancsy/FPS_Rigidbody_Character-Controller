@@ -4,6 +4,7 @@ public class PlayerCamera : MonoBehaviour
 {
     public float sensitivityX;
     public float sensitivityY;
+    private PlayerMovement playerMovement;
 
     public Transform orientation;
 
@@ -14,6 +15,7 @@ public class PlayerCamera : MonoBehaviour
     {
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
+        playerMovement = GetComponent<PlayerMovement>();
     }
 
     public void PlayerLook(Vector2 lookInput)
@@ -29,5 +31,11 @@ public class PlayerCamera : MonoBehaviour
         transform.rotation = Quaternion.Euler(xRotation, yRotation, 0);
 
         orientation.rotation = Quaternion.Euler(0, yRotation, 0);
+        if (playerMovement.isSliding)
+        {
+            Vector3 newVelocity = playerMovement.rb.linearVelocity;
+            newVelocity = Quaternion.Euler(0, mouseX * playerMovement.slideSteeringPower, 0) * newVelocity;
+            playerMovement.rb.linearVelocity = newVelocity;
+        }
     }
 }
