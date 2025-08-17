@@ -191,7 +191,7 @@ Rigidbody:
   serializedVersion: 4
   m_Mass: 3
   m_Drag: 0
-  m_AngularDrag: 0.05
+  m_AngularDrag: 0
   m_CenterOfMass: {x: 0, y: 0, z: 0}
   m_InertiaTensor: {x: 1, y: 1, z: 1}
   m_InertiaRotation: {x: 0, y: 0, z: 0, w: 1}
@@ -205,9 +205,9 @@ Rigidbody:
   m_ImplicitTensor: 1
   m_UseGravity: 1
   m_IsKinematic: 0
-  m_Interpolate: 0
+  m_Interpolate: 1
   m_Constraints: 0
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
 --- !u!114 &53291931
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -232,7 +232,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8d45f3066f0d889478bddb0280662fde, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _playerCamera: {fileID: 0}
 --- !u!114 &53291933
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -255,12 +254,15 @@ MonoBehaviour:
   slideSpeedDampening: 0.99
   keepSlidingSpeedThreshold: 3
   slideSteeringPower: 0.5
+  dashJumpForce: 5
+  isDashing: 0
+  dashUpwardForce: 1
+  dashDuration: 0.2
+  dashCooldown: 1
   jumpForce: 2
-  airMultiplier: 3
   cameraHolder: {fileID: 349082904}
-  mouseSensitivity: 10
+  mouseSensitivity: 8
   verticalClampAngle: 90
-  horizontalClampAngle: 90
   playerHeight: 2
   whatIsGround:
     serializedVersion: 2
@@ -843,7 +845,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 31321ba15b8f8eb4c954353edc038b1d, type: 2}
+  - {fileID: 2100000, guid: 4084a843b9ef6af45a63b7163f9fbefb, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

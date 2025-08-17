@@ -8,17 +8,13 @@ public class InputHandler : MonoBehaviour
     public Vector2 moveInput { get; private set; }
     public bool jumpInput { get; private set; }
     public bool slideInput { get; private set; }
+    public bool dashJumpInput { get; private set; }
 
     void Awake()
     {
         input = new PlayerInputSet();
         playerMovement = GetComponent<PlayerMovement>();
         SubscribeToInputActionEvents();
-    }
-
-    void Update()
-    {
-        Debug.Log("Slide Input: " + slideInput);
     }
 
     private void SubscribeToInputActionEvents()
@@ -32,8 +28,11 @@ public class InputHandler : MonoBehaviour
         input.PlayerController.Jump.performed += ctx => jumpInput = ctx.ReadValueAsButton();
         input.PlayerController.Jump.canceled += ctx => jumpInput = false;
 
-        input.PlayerController.Slide.performed += ctx => slideInput = true;
+        input.PlayerController.Slide.started += ctx => slideInput = true;
         input.PlayerController.Slide.canceled += ctx => slideInput = false;
+
+        input.PlayerController.Dash.performed += ctx => dashJumpInput = true;
+        input.PlayerController.Dash.canceled += ctx => dashJumpInput = false;
     }
 
     private void OnEnable() => input.Enable();

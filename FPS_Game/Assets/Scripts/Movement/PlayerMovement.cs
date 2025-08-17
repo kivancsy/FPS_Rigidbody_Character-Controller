@@ -1,3 +1,4 @@
+using System.Collections;
 using DG.Tweening;
 using UnityEngine;
 
@@ -25,14 +26,25 @@ public class PlayerMovement : MonoBehaviour
     public float keepSlidingSpeedThreshold = 3f; // As long as speed is above this, keep sliding
     public float slideSteeringPower = 0.5f; // How much you can steer around while sliding
 
+    [Header("Dash Settings")] [SerializeField]
+    private float dashJumpForce = 20f;
+
+    public bool isDashing;
+    private bool canDash = true;
+    private Vector3 dashDirection;
+    private float dashTimer;
+
+    [SerializeField] private float dashUpwardForce = 0f;
+    [SerializeField] private float dashDuration = 0.2f;
+    [SerializeField] private float dashCooldown = 1f;
+
     [Header("Jump")] public float jumpForce;
-    public float airMultiplier;
     private float lastSpeedBeforeTakeoff;
+    private bool shouldSlideOnLand = false;
 
     [Header("Look Around")] public Transform cameraHolder;
     public float mouseSensitivity = 300f;
     public float verticalClampAngle = 90f;
-    public float horizontalClampAngle = 90f;
     float verticalRotation = 0f;
 
     [Header("Ground Check")] public float playerHeight;
@@ -71,10 +83,8 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        HandleDrag();
         GroundCheck();
         playerUI.UpdateText("Velocity: " + rb.linearVelocity.magnitude.ToString("F2"));
-        Debug.Log("Is Sliding: " + isSliding);
     }
 
     void FixedUpdate()
@@ -141,20 +151,55 @@ public class PlayerMovement : MonoBehaviour
 
     public void Jump()
     {
-        exitingSlope = true;
-        if (!isGrounded) return;
+        if (input.jumpInput)
+        {
+            exitingSlope = true;
+            if (!isGrounded) return;
+            if (isSliding) return;
 
-        lastSpeedBeforeTakeoff = displacement.magnitude;
+            lastSpeedBeforeTakeoff = displacement.magnitude;
 
-        rb.linearVelocity += Vector3.up * jumpForce;
+            rb.linearVelocity += Vector3.up * jumpForce;
+        }
+
+
         // rb.linearVelocity = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
         // rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
     }
 
-    // private void GroundMovement()
-    // {
-    //     rb.AddForce(moveDirection.normalized * moveSpeed, ForceMode.VelocityChange);
-    // }
+    public void DashJump()
+    {
+        if (input.dashJumpInput)
+        {
+            shouldSlideOnLand = true;
+            exitingSlope = true;
+            if (isSliding) return;
+            if (!isGrounded) return;
+            lastSpeedBeforeTakeoff = displacement.magnitude;
+
+            Vector2 inputDirection = input.moveInput;
+            Vector3 jumpDir = (transform.forward * inputDirection.y + transform.right * inputDirection.x).normalized;
+
+            if (jumpDir == Vector3.zero)
+                jumpDir = Vector3.up;
+            else
+                jumpDir = (jumpDir + Vector3.up).normalized;
+
+            rb.linearVelocity += jumpDir * dashJumpForce;
+
+            // Coroutine ile yere inince slide başlat
+            StartCoroutine(SlideOnLandCoroutine());
+        }
+    }
+
+    private IEnumerator SlideOnLandCoroutine()
+    {
+        // Havada olduğu sürece bekle
+        while (!isGrounded)
+            yield return null;
+
+        Slide();
+    }
 
     #endregion
 
@@ -174,11 +219,11 @@ public class PlayerMovement : MonoBehaviour
 
     public void RotateBodyHorizontally(Vector2 lookInput)
     {
-        // Get mouse input for horizontal rotation
-        float mouseX = lookInput.x * (Time.deltaTime * mouseSensitivity);
+        float mouseX = lookInput.x * (Time.fixedDeltaTime * mouseSensitivity);
 
-        // Rotate the player horizontally
-        transform.Rotate(0f, mouseX, 0f);
+        //transform.Rotate(0f, mouseX, 0f);
+        Quaternion deltaRotation = Quaternion.Euler(0f, mouseX, 0f);
+        rb.MoveRotation(rb.rotation * deltaRotation);
 
         // If sliding, allow steering slightly
         if (isSliding)
@@ -195,7 +240,7 @@ public class PlayerMovement : MonoBehaviour
 
     public void Slide()
     {
-        if (input.slideInput)
+        if (input.slideInput || shouldSlideOnLand)
         {
             if (!isGrounded) return;
             if (isSliding) return;
@@ -212,6 +257,7 @@ public class PlayerMovement : MonoBehaviour
         {
             Vector3 newVelocity = rb.linearVelocity * slideSpeedDampening;
             if (newVelocity.magnitude > keepSlidingSpeedThreshold) rb.linearVelocity = newVelocity;
+
             else StopSliding();
         }
     }
@@ -232,9 +278,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void StopSliding()
     {
-        Debug.Log("Stopping Sliding");
         isSliding = false;
-        
         cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y + 0.4f, 0.2f);
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
         playerVisual.transform.DOLocalMoveY(0f, 0.2f);
@@ -242,16 +286,66 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
-    private void AirMovement()
-    {
-        rb.AddForce(moveDirection.normalized * airMultiplier, ForceMode.VelocityChange);
-    }
+    #region Dodge
+
+    // public void Dodge()
+    // {
+    //     if (input.dashJumpInput && canDash && isGrounded && !isSliding && !isDashing)
+    //     {
+    //         StartDodge();
+    //     }
+    // }
+    //
+    // private void StartDodge()
+    // {
+    //     isDashing = true;
+    //     canDash = false;
+    //
+    //     // Input yönünü al
+    //     Vector2 inputDir = input.moveInput;
+    //     Vector3 moveDir = Vector3.zero;
+    //
+    //     if (inputDir.x < 0) moveDir = Vector3.left; // A
+    //     else if (inputDir.x > 0) moveDir = Vector3.right; // D
+    //     else if (inputDir.y < 0) moveDir = Vector3.back; // S
+    //     else
+    //     {
+    //         // ileri (W) veya input yoksa dodge iptal
+    //         isDashing = false;
+    //         canDash = true;
+    //         return;
+    //     }
+    //
+    //     // Force uygula (Dash’ten kopya)
+    //     Vector3 force = moveDir.normalized * dashForce;
+    //     rb.linearVelocity = Vector3.zero; // önce mevcut velocity’yi sıfırla, daha temiz olur
+    //     rb.AddForce(force, ForceMode.Impulse);
+    //
+    //     // Süre sonunda bitir
+    //     Invoke(nameof(ResetDash), dashDuration);
+    // }
+    //
+    // private void StopDodge()
+    // {
+    //     isDashing = false;
+    // }
+    //
+    //
+    // private void ResetDash()
+    // {
+    //     canDash = true;
+    // }
+
+    #endregion
 
     private void GroundCheck()
     {
         isGrounded = Physics.Raycast(transform.position, Vector3.down, playerHeight * 0.5f + 0.3f, whatIsGround);
         if (isGrounded)
+        {
             exitingSlope = false;
+            shouldSlideOnLand = false;
+        }
     }
 
     public bool OnSlope()

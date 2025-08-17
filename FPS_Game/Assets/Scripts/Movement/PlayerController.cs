@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class PlayerController : MonoBehaviour
@@ -17,19 +18,25 @@ public class PlayerController : MonoBehaviour
         Cursor.visible = false;
     }
 
+    private void Update()
+    {
+    }
+
     void FixedUpdate()
     {
-        _playerMovement.ProcessMovement(_input.moveInput);
+        _playerMovement.RotateBodyHorizontally(_input.lookInput);
+        _playerMovement.RotateBodyHorizontally(_input.lookInput);
 
-        if (_input.jumpInput)
-            _playerMovement.Jump();
+        _playerMovement.ProcessMovement(_input.moveInput);
+        _playerMovement.Jump();
+        _playerMovement.DashJump();
 
         _playerMovement.Slide();
+        //_playerMovement.Dodge();
     }
 
     void LateUpdate()
     {
         _playerMovement.LookUpAndDownWithCamera(_input.lookInput);
-        _playerMovement.RotateBodyHorizontally(_input.lookInput);
     }
 }
