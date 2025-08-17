@@ -9,6 +9,7 @@ public class InputHandler : MonoBehaviour
     public bool jumpInput { get; private set; }
     public bool slideInput { get; private set; }
     public bool dashJumpInput { get; private set; }
+    public bool shootInput;
 
     void Awake()
     {
@@ -33,6 +34,10 @@ public class InputHandler : MonoBehaviour
 
         input.PlayerController.Dash.performed += ctx => dashJumpInput = true;
         input.PlayerController.Dash.canceled += ctx => dashJumpInput = false;
+
+        input.PlayerController.Shoot.performed += ctx => shootInput = true;
+        input.PlayerController.Shoot.canceled += ctx => shootInput = false;
+        
     }
 
     private void OnEnable() => input.Enable();

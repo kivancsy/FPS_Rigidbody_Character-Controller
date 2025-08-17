@@ -179,8 +179,7 @@ public class PlayerMovement : MonoBehaviour
             Vector2 inputDirection = input.moveInput;
             Vector3 jumpDir = (transform.forward * inputDirection.y + transform.right * inputDirection.x).normalized;
 
-            if (jumpDir == Vector3.zero)
-                jumpDir = Vector3.up;
+            if (jumpDir == Vector3.zero) return;
             else
                 jumpDir = (jumpDir + Vector3.up).normalized;
 

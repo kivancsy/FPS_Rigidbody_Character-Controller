@@ -4,12 +4,14 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     PlayerMovement _playerMovement;
+    private Shotty _shotty;
     private InputHandler _input;
 
     void Awake()
     {
         _input = GetComponent<InputHandler>();
         _playerMovement = GetComponent<PlayerMovement>();
+        _shotty = GetComponentInChildren<Shotty>();
     }
 
     void Start()
@@ -32,6 +34,11 @@ public class PlayerController : MonoBehaviour
         _playerMovement.DashJump();
 
         _playerMovement.Slide();
+
+        if (_input.shootInput)
+            _shotty.Fire();
+
+
         //_playerMovement.Dodge();
     }
 
