@@ -15,16 +15,16 @@ public class PlayerMovement : MonoBehaviour
     public bool isSliding;
     public float groundDrag;
 
-    [Header("Sliding")] public float slideSpeedThreshold = 6f; // Minimum speed needed to begin sliding
+    [Header("Sliding")] public float slideSpeedThreshold = 6f;
 
     public float
-        addedSlideSpeed = 3f; // Adding flat speed + also add a percentage of horizontal speed up to 66% of base speed
+        addedSlideSpeed = 3f;
 
     public float
-        slideSpeedDampening = 0.99f; // The speed will be multiplied by this every frame (to stop in ~3 seconds)
+        slideSpeedDampening = 0.99f;
 
-    public float keepSlidingSpeedThreshold = 3f; // As long as speed is above this, keep sliding
-    public float slideSteeringPower = 0.5f; // How much you can steer around while sliding
+    public float keepSlidingSpeedThreshold = 3f;
+    public float slideSteeringPower = 0.5f;
 
     [Header("Dash Settings")] [SerializeField]
     private float dashJumpForce = 20f;
@@ -57,6 +57,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Transform References")] public GameObject playerCamera;
     public GameObject playerVisual;
+    [SerializeField] private Transform weaponHolder;
 
     // Displacement Calculation
     Vector3 lastPosition;
@@ -104,7 +105,6 @@ public class PlayerMovement : MonoBehaviour
 
         if (moveDirection == Vector3.zero)
         {
-            // Dampen speed fast
             if (isGrounded) rb.linearVelocity = rb.linearVelocity * 0.6f;
             return;
         }
@@ -116,9 +116,8 @@ public class PlayerMovement : MonoBehaviour
         if (speedToApply > baseSpeed) speedToApply *= isGrounded ? 0.985f : 0.99f;
 
 
-        // The new velocity to apply
         Vector3 newVelocity = moveDirection.normalized * speedToApply;
-        newVelocity.y = rb.linearVelocity.y; // Keep the current vertical speed
+        newVelocity.y = rb.linearVelocity.y;
 
         if (isGrounded) rb.linearVelocity = newVelocity;
         else rb.AddForce(moveDirection.normalized * speedToApply, ForceMode.Force);
@@ -187,14 +186,12 @@ public class PlayerMovement : MonoBehaviour
 
             rb.linearVelocity += jumpDir * dashJumpForce;
 
-            // Coroutine ile yere inince slide başlat
             StartCoroutine(SlideOnLandCoroutine());
         }
     }
 
     private IEnumerator SlideOnLandCoroutine()
     {
-        // Havada olduğu sürece bekle
         while (!isGrounded)
             yield return null;
 
@@ -215,6 +212,7 @@ public class PlayerMovement : MonoBehaviour
 
         // Apply vertical rotation to the camera holder
         playerCamera.transform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
+        weaponHolder.transform.localRotation = Quaternion.Euler(verticalRotation, 0f, 0f);
     }
 
     public void RotateBodyHorizontally(Vector2 lookInput)
@@ -262,14 +260,31 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    void RotateWeapon()
+    {
+        weaponHolder.DOLocalMoveY(weaponHolder.localPosition.y - 0.55f, 0.2f);
+        weaponHolder.DOLocalMoveX(weaponHolder.localPosition.x - 0.39f, 0.2f);
+        weaponHolder.DOLocalMoveZ(weaponHolder.localPosition.z + 0.3f, 0.2f);
+        weaponHolder.DOLocalRotate(new Vector3(0, 5, 0), 0.2f);
+    }
+
+    void ReturnWeaponBackToRoot()
+    {
+        weaponHolder.DOLocalMoveY(weaponHolder.localPosition.y + 0.55f, 0.2f);
+        weaponHolder.DOLocalMoveX(weaponHolder.localPosition.x + 0.39f, 0.2f);
+        weaponHolder.DOLocalMoveZ(weaponHolder.localPosition.z - 0.3f, 0.2f);
+        weaponHolder.DOLocalRotate(new Vector3(0, 5, 0), 0.2f);
+    }
+
     private void StartSliding()
     {
         isSliding = true;
         cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y - 0.4f, 0.2f);
         playerVisual.transform.DOLocalRotate(new Vector3(-20, 0, 0), 0.2f);
         playerVisual.transform.DOLocalMoveY(-0.2f, 0.2f);
+        RotateWeapon();
 
-        float currSpeedModifier = Mathf.Clamp(rb.linearVelocity.magnitude / 40, 0, 1); // Maximum speed at 20
+        float currSpeedModifier = Mathf.Clamp(rb.linearVelocity.magnitude / 40, 0, 1);
         float boost = addedSlideSpeed + Mathf.Lerp(0, addedSlideSpeed * 2f, currSpeedModifier);
 
         Vector3 direction = rb.linearVelocity.normalized;
@@ -282,6 +297,8 @@ public class PlayerMovement : MonoBehaviour
         cameraHolder.DOLocalMoveY(cameraHolder.localPosition.y + 0.4f, 0.2f);
         playerVisual.transform.DOLocalRotate(new Vector3(0, 0, 0), 0.2f);
         playerVisual.transform.DOLocalMoveY(0f, 0.2f);
+
+        ReturnWeaponBackToRoot();
     }
 
     #endregion
