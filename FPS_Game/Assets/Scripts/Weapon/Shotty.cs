@@ -36,17 +36,9 @@ public class Shotty : Weapon
 
             Debug.DrawLine(muzzle.position, hit.point, Color.red, 1f);
         }
-
-
-        if (animTriggers.triggerCalled)
-            OnShootAnimationFinished();
+        
     }
-
-    private void OnShootAnimationFinished()
-    {
-        //animator.SetBool("isShot", false);
-        Debug.Log("Shotty animation finished.");
-    }
+   
 
     private Vector3 GetSpreadDirection(Vector3 forward, float angle)
     {
