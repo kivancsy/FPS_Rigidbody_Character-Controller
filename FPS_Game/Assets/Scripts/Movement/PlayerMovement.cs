@@ -156,7 +156,7 @@ public class PlayerMovement : MonoBehaviour
             if (!isGrounded) return;
             if (isSliding) return;
 
-            lastSpeedBeforeTakeoff = displacement.magnitude;
+           // lastSpeedBeforeTakeoff = displacement.magnitude;
 
             rb.linearVelocity += Vector3.up * jumpForce;
         }

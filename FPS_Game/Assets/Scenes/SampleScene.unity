@@ -265,7 +265,7 @@ MonoBehaviour:
   cameraHolder: {fileID: 349082904}
   mouseSensitivity: 8
   verticalClampAngle: 90
-  playerHeight: 2
+  playerHeight: 1.5
   whatIsGround:
     serializedVersion: 2
     m_Bits: 64
