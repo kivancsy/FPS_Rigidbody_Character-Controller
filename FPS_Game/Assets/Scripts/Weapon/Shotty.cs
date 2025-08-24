@@ -24,28 +24,5 @@ public class Shotty : Weapon
         //animator.Play(SHOOT_ANIM, 0, 0f);
         animator.SetTrigger("Shot");
         Debug.Log("Shot trigger set.");
-
-        for (int i = 0; i < pelletCount; i++)
-        {
-            Vector3 direction = GetSpreadDirection(muzzle.forward, spreadAngle);
-
-            if (Physics.Raycast(muzzle.position, direction, out RaycastHit hit, range))
-            {
-                //Damage Apply Here
-            }
-
-            Debug.DrawLine(muzzle.position, hit.point, Color.red, 1f);
-        }
-        
-    }
-   
-
-    private Vector3 GetSpreadDirection(Vector3 forward, float angle)
-    {
-        float randomYaw = Random.Range(-angle, angle);
-        float randomPitch = Random.Range(-angle, angle);
-
-        Quaternion rotation = Quaternion.Euler(randomPitch, randomYaw, 0f);
-        return rotation * forward;
     }
 }
